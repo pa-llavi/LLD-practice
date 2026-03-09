@@ -1,0 +1,86 @@
+@startuml Snake_And_Food_Class_Diagram
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+' ──────── Value Object ────────
+class Position <<struct>> {
+    +row : int
+    +col : int
+    +operator==(other) : bool
+    +operator<(other) : bool
+}
+
+' ──────── Singleton ────────
+class GameBoard <<Singleton>> {
+    -width : int
+    -height : int
+    -{static} instance : GameBoard*
+    -GameBoard(w, h)
+    +{static} getInstance(w, h) : GameBoard*
+    +{static} resetInstance() : void
+    +getWidth() : int
+    +getHeight() : int
+}
+
+' ──────── Factory Pattern ────────
+abstract class FoodItem {
+    #row : int
+    #col : int
+    #points : int
+    +getRow() : int
+    +getCol() : int
+    +getPoints() : int
+}
+
+class NormalFood {
+    +NormalFood(r, c)
+}
+
+class BonusFood {
+    +BonusFood(r, c)
+}
+
+FoodItem <|-- NormalFood
+FoodItem <|-- BonusFood
+
+class FoodFactory {
+    +{static} createFood(row, col, type) : unique_ptr<FoodItem>
+}
+
+FoodFactory ..> FoodItem : <<creates>>
+
+' ──────── Snake ────────
+class Snake {
+    -body : deque<Position>
+    -positionSet : set<Position>
+    +getHead() : Position
+    +getTail() : Position
+    +size() : int
+    +occupies(pos) : bool
+    +addHead(pos) : void
+    +removeTail() : void
+}
+
+Snake --> Position : stores
+
+' ──────── Controller ────────
+class SnakeGame {
+    -board : GameBoard*
+    -snake : Snake
+    -currentFood : Position
+    -score : int
+    -rng : mt19937
+    -getNextPosition(head, dir) : Position
+    -spawnFood() : void
+    +SnakeGame(width, height)
+    +move(direction) : int
+    +getSnakeSize() : int
+    +getScore() : int
+    +getFoodPosition() : Position
+}
+
+SnakeGame --> GameBoard : uses
+SnakeGame *-- Snake : owns
+
+@enduml
